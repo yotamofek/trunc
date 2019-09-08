@@ -7,18 +7,18 @@ pub trait TruncateToBoundary {
 impl TruncateToBoundary for str {
     fn truncate_to_boundary(&self, mut chars: usize) -> &Self {
         let mut boundary = 0;
-        let mut peekable_indices = self.grapheme_indices(true).into_iter().peekable();
-        for _ in  self.grapheme_indices(true) {
+        let mut peekable_indices =
+            self.grapheme_indices(true).into_iter().peekable();
+        for _ in self.grapheme_indices(true) {
             let (_size, grapheme) = peekable_indices.next().unwrap();
             let next = match peekable_indices.peek() {
-                Some((next, _ )) => *next,
-                None => return &self
+                Some((next, _)) => *next,
+                None => return &self,
             };
             let grapheme_char_count = grapheme.chars().count();
             chars = match chars.checked_sub(grapheme_char_count) {
                 Some(chars) => {
                     if !grapheme.chars().next().unwrap().is_whitespace() {
-
                         boundary = next;
                     }
 
