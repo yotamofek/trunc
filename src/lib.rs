@@ -1,4 +1,3 @@
-use std::iter::repeat;
 use unicode_segmentation::UnicodeSegmentation;
 
 pub trait TruncateToBoundary {
@@ -6,34 +5,31 @@ pub trait TruncateToBoundary {
 }
 
 impl TruncateToBoundary for str {
-    fn truncate_to_boundary(&self, mut chars: usize) -> &Self {
-        let mut boundary = 0;
+    fn truncate_to_boundary(&self, chars: usize) -> &Self {
+        if chars == 0 {
+            return &self[..0];
+        }
 
-        let grapheme_indices = self.grapheme_indices(true).zip(
-            self.grapheme_indices(true)
-                .skip(1)
-                .map(Some)
-                .chain(repeat(None)),
-        );
+        let mut boundary = match self.char_indices().nth(chars) {
+            None => return self,
+            Some((boundary, _)) => boundary,
+        };
 
-        for ((_, grapheme), next_grapheme) in grapheme_indices {
-            let next = match next_grapheme {
-                Some((next, _)) => next,
-                None => return &self,
-            };
+        let mut grapheme_iter = self
+            .grapheme_indices(true)
+            .rev()
+            .skip_while(move |(n, _)| *n > boundary);
 
-            let grapheme_char_count = grapheme.chars().count();
+        if let Some((grapheme_boundary, _)) = grapheme_iter.next() {
+            boundary = grapheme_boundary;
+        }
 
-            chars = match chars.checked_sub(grapheme_char_count) {
-                Some(chars) => {
-                    if !grapheme.chars().next().unwrap().is_whitespace() {
-                        boundary = next;
-                    }
-
-                    chars
-                }
-                None => break,
-            };
+        for (grapheme_boundary, grapheme) in grapheme_iter {
+            if grapheme.chars().next().unwrap().is_whitespace() {
+                boundary = grapheme_boundary;
+            } else {
+                break;
+            }
         }
 
         &self[..boundary]
@@ -46,7 +42,7 @@ mod tests {
 
     #[test]
     fn test() {
-        let s = "🤚🏾a🤚🏾 🤚🏾  🤚🏾";
+        let s = "🤚🏾a🤚🏾 🤚🏾\t 🤚🏾";
 
         assert_eq!(s.truncate_to_boundary(1), "");
         assert_eq!(s.truncate_to_boundary(2), "🤚🏾");
@@ -60,7 +56,7 @@ mod tests {
         assert_eq!(s.truncate_to_boundary(9), "🤚🏾a🤚🏾 🤚🏾");
         assert_eq!(s.truncate_to_boundary(10), "🤚🏾a🤚🏾 🤚🏾");
         assert_eq!(s.truncate_to_boundary(11), "🤚🏾a🤚🏾 🤚🏾");
-        assert_eq!(s.truncate_to_boundary(12), "🤚🏾a🤚🏾 🤚🏾  🤚🏾");
+        assert_eq!(s.truncate_to_boundary(12), "🤚🏾a🤚🏾 🤚🏾\t 🤚🏾");
     }
 
     #[test]
@@ -68,6 +64,7 @@ mod tests {
         let s = "🤚🏾a🤚🏾 🤚🏾  🤚🏾";
 
         assert_eq!(s.truncate_to_boundary(100), s);
+        assert_eq!(s.truncate_to_boundary(s.chars().count()), s);
         assert_eq!(s.truncate_to_boundary(0), "");
     }
 }
