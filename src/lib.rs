@@ -55,6 +55,19 @@ mod tests {
 
         assert_eq!(s.truncate_to_boundary(6), "🤚🏾a🤚🏾");
         assert_eq!(s.truncate_to_boundary(7), "🤚🏾a🤚🏾");
+
         assert_eq!(s.truncate_to_boundary(8), "🤚🏾a🤚🏾 🤚🏾");
+        assert_eq!(s.truncate_to_boundary(9), "🤚🏾a🤚🏾 🤚🏾");
+        assert_eq!(s.truncate_to_boundary(10), "🤚🏾a🤚🏾 🤚🏾");
+        assert_eq!(s.truncate_to_boundary(11), "🤚🏾a🤚🏾 🤚🏾");
+        assert_eq!(s.truncate_to_boundary(12), "🤚🏾a🤚🏾 🤚🏾  🤚🏾");
+    }
+
+    #[test]
+    fn test_non_trucated_string() {
+        let s = "🤚🏾a🤚🏾 🤚🏾  🤚🏾";
+
+        assert_eq!(s.truncate_to_boundary(100), s);
+        assert_eq!(s.truncate_to_boundary(0), "");
     }
 }
