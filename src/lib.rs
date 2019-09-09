@@ -25,7 +25,6 @@ impl TruncateToBoundary for str {
             boundary = grapheme_boundary;
         }
 
-
         &self.trim_start()[..boundary].trim_end()
     }
 }
@@ -76,7 +75,6 @@ mod tests {
         assert_eq!(s.truncate_to_boundary(11), "🤚🏾a🤚 🤚🏾\t 🤚");
         assert_eq!(s.truncate_to_boundary(12), "🤚🏾a🤚 🤚🏾\t 🤚");
         assert_eq!(s.truncate_to_boundary(20), "🤚🏾a🤚 🤚🏾\t 🤚");
-
     }
 
     #[test]
@@ -93,7 +91,5 @@ mod tests {
         assert_eq!(s.truncate_to_boundary(11), "🤚🏾a🤚 🤚🏾\t 🤚");
         assert_eq!(s.truncate_to_boundary(12), "🤚🏾a🤚 🤚🏾\t 🤚");
         assert_eq!(s.truncate_to_boundary(20), "🤚🏾a🤚 🤚🏾\t 🤚");
-
     }
 }
-
