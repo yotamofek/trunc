@@ -69,7 +69,7 @@ mod tests {
     }
 
     #[test]
-    fn truncate_non_split_grapheme {
+    fn truncate_non_split_grapheme() {
         let s = "🤚🏾a🤚 🤚🏾\t 🤚    ";
 
         assert_eq!(s.truncate_to_boundary(4), "🤚🏾a🤚");
