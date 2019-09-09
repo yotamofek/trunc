@@ -18,7 +18,7 @@ jobs:
           name: Format
           command: |
             rustup component add rustfmt
-            cargo fmt -- --check
+            cargo fmt
       - run:
           name: Test
           command: RUST_BACKTRACE=1 cargo test
