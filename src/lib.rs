@@ -10,12 +10,13 @@ impl TruncateToBoundary for str {
             return &self[..0];
         }
 
-        let mut boundary = match self.char_indices().nth(chars) {
-            None => return self,
+        let mut boundary = match self.trim_start().char_indices().nth(chars) {
+            None => return self.trim(),
             Some((boundary, _)) => boundary,
         };
 
         let mut grapheme_iter = self
+            .trim_start()
             .grapheme_indices(true)
             .rev()
             .skip_while(move |(n, _)| *n > boundary);
@@ -24,15 +25,8 @@ impl TruncateToBoundary for str {
             boundary = grapheme_boundary;
         }
 
-        for (grapheme_boundary, grapheme) in grapheme_iter {
-            if grapheme.chars().next().unwrap().is_whitespace() {
-                boundary = grapheme_boundary;
-            } else {
-                break;
-            }
-        }
 
-        &self[..boundary]
+        &self.trim_start()[..boundary].trim_end()
     }
 }
 
