@@ -24,15 +24,7 @@ impl TruncateToBoundary for str {
             boundary = grapheme_boundary;
         }
 
-        for (grapheme_boundary, grapheme) in grapheme_iter {
-            if grapheme.chars().next().unwrap().is_whitespace() {
-                boundary = grapheme_boundary;
-            } else {
-                break;
-            }
-        }
-
-        &self[..boundary]
+        &self[..boundary].trim_end()
     }
 }
 
