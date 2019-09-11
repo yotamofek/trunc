@@ -48,11 +48,12 @@ impl TruncateToBoundary for str {
     /// use trunc::*;
     ///
     /// let s = "🤚🏾a🤚 ";
-    ///  // 🤚🏾 = 8 bytes
+    ///  // where "🤚🏾" = 8 bytes
     /// assert_eq!(s.truncate_to_byte_offset(0), "");
     /// assert_eq!(s.truncate_to_byte_offset(7), "");
     /// assert_eq!(s.truncate_to_byte_offset(8), "🤚🏾");
     /// assert_eq!(s.truncate_to_byte_offset(9), "🤚🏾a");
+    /// assert_eq!(s.truncate_to_byte_offset(10), "🤚🏾a");
     /// assert_eq!(s.truncate_to_byte_offset(18), s);
     /// ```
     fn truncate_to_byte_offset(&self, boundary: usize) -> &Self {
@@ -137,10 +138,9 @@ mod tests {
     #[test]
     fn truncate_to_bytes(){
         let s = "🤚🏾a🤚 ";
-;
+
         assert_eq!(s.truncate_to_byte_offset(1), "");
         assert_eq!(s.truncate_to_byte_offset(2), "");
-        assert_eq!(s.truncate_to_byte_offset(10), "🤚🏾a");
         assert_eq!(s.truncate_to_byte_offset(13), "🤚🏾a🤚");
         assert_eq!(s.truncate_to_byte_offset(14), "🤚🏾a🤚");
         assert_eq!(s.truncate_to_byte_offset(18), s);
