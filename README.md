@@ -1,4 +1,4 @@
-# truncate
+# truncrate
 Rust library for intelligently truncating unicode strings!
 
 An economical way to truncate a string to a given character count or byte-offset without 
@@ -11,7 +11,7 @@ Depending on the encoding of your browser '🤚🏾' will produce a dark-skinned
 Notice how the truncation to 1 will not break the grapheme into a yellow hand:
 
 ```
-use trunc::*;
+use truncrate::*;
 let s = "🤚🏾a🤚 🤚🏾\t 🤚    ";
 
 assert_eq!(s.truncate_to_boundary(1), "");
@@ -36,7 +36,7 @@ assert_eq!(s.truncate_to_boundary(10), s);
 You can also choose to truncate by byte-offset (i.e., byte-size boundary):
 
 ```
-use trunc::*;
+use truncrate::*;
 
 let s = "🤚🏾a🤚 ";
 // where "🤚🏾" = 8 bytes
