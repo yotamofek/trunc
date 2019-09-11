@@ -6,7 +6,7 @@ splitting graphemes.
 
 Examples
 ---------------
-Depending on the encoding of your browser '🤚🏾' will produce a dark-skinned hand. In most text editors it will look like two separate characters. 
+Depending on the encoding of your browser '🤚🏾' will produce a dark-skinned hand. In most text editors it will look like two separate characters (🤚  🏾). 
 
 Notice how the truncation to 1 will not break the grapheme into a yellow hand:
 
