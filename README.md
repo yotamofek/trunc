@@ -36,15 +36,15 @@ assert_eq!(s.truncate_to_boundary(10), s);
 You can also choose to truncate by byte-offset (i.e., byte-size boundary):
 
 ```
- use trunc::*;
+use trunc::*;
 
- let s = "🤚🏾a🤚 ";
-  // where "🤚🏾" = 8 bytes
- assert_eq!(s.truncate_to_byte_offset(0), "");
- assert_eq!(s.truncate_to_byte_offset(8), "🤚🏾");
+let s = "🤚🏾a🤚 ";
+// where "🤚🏾" = 8 bytes
+assert_eq!(s.truncate_to_byte_offset(0), "");
+assert_eq!(s.truncate_to_byte_offset(8), "🤚🏾");
 ```
 
-For further explanations and examples check out the auto generated documentation with
+For further explanations and examples check out the auto generated documentation with:
 ```
 cargo doc --open
 ```
