@@ -16,7 +16,7 @@ impl TruncateToBoundary for str {
     ///
     ///
     /// ```
-    /// use trunc::*;
+    /// use truncrate::*;
     ///
     /// let s = "🤚🏾a🤚🏾 ";
     ///
@@ -45,7 +45,7 @@ impl TruncateToBoundary for str {
     /// # Examples:
     ///
     /// ```
-    /// use trunc::*;
+    /// use truncrate::*;
     ///
     /// let s = "🤚🏾a🤚 ";
     ///  // where "🤚🏾" = 8 bytes
