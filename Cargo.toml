@@ -3,6 +3,8 @@ name = "trunc"
 version = "0.1.0"
 authors = ["Yotam Ofek <yotam.ofek@gmail.com>, Galoz666 <yavinarba@gmail.com>"]
 edition = "2018"
+license = "MIT OR Apache-2.0"
+description = "truncate strings economically without splitting your charactersm, symbols, emojis etc."
 
 [dependencies]
 unicode-segmentation = "*"
