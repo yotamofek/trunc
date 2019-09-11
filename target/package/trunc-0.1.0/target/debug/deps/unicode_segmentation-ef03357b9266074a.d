@@ -1,0 +1,11 @@
+/Users/galoz/trunc/target/package/trunc-0.1.0/target/debug/deps/unicode_segmentation-ef03357b9266074a.rmeta: /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/lib.rs /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/grapheme.rs /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/tables.rs /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/word.rs /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/sentence.rs
+
+/Users/galoz/trunc/target/package/trunc-0.1.0/target/debug/deps/libunicode_segmentation-ef03357b9266074a.rlib: /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/lib.rs /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/grapheme.rs /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/tables.rs /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/word.rs /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/sentence.rs
+
+/Users/galoz/trunc/target/package/trunc-0.1.0/target/debug/deps/unicode_segmentation-ef03357b9266074a.d: /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/lib.rs /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/grapheme.rs /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/tables.rs /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/word.rs /Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/sentence.rs
+
+/Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/lib.rs:
+/Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/grapheme.rs:
+/Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/tables.rs:
+/Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/word.rs:
+/Users/galoz/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.3.0/src/sentence.rs:

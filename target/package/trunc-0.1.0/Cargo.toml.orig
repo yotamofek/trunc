@@ -1,5 +1,5 @@
 [package]
-name = "trunc-crate"
+name = "trunc"
 version = "0.1.0"
 authors = ["Yotam Ofek <yotam.ofek@gmail.com>, Galoz666 <yavinarba@gmail.com>"]
 edition = "2018"
@@ -9,7 +9,7 @@ repository = "https://github.com/yotamofek/trunc"
 readme = "README.md"
 
 [lib]
-name = "trunc-crate"
+name = "trunc"
 path = "src/lib.rs"
 
 [dependencies]
