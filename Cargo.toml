@@ -8,3 +8,7 @@ description = "truncate strings economically without splitting your charactersm,
 
 [dependencies]
 unicode-segmentation = "*"
+
+[lib]
+name = "trunc"
+path = "src/lib.rs"
