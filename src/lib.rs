@@ -6,6 +6,27 @@ pub trait TruncateToBoundary {
 }
 
 impl TruncateToBoundary for str {
+    /// Truncates a given string to a set numerical boundary.
+    /// If the boundary splits a grapheme (e.g., when a character is a resultant mix of more than 1 utf-8 character, like some emojis)
+    /// the truncation will scale back to the previous character.
+    /// If the truncation ends with white space - this will be trimmed.
+    /// Should the truncation boundary exceed the string's size - the original string will return (including whitespace).
+    ///
+    /// # Examples:
+    ///
+    ///
+    /// ```
+    /// use trunc::*;
+    ///
+    /// let s = "🤚🏾a🤚🏾 ";
+    ///
+    /// assert_eq!(s.truncate_to_boundary(1), "");
+    /// assert_eq!(s.truncate_to_boundary(2), "🤚🏾");
+    /// assert_eq!(s.truncate_to_boundary(3), "🤚🏾a");
+    /// assert_eq!(s.truncate_to_boundary(4), "🤚🏾a");
+    /// assert_eq!(s.truncate_to_boundary(5), "🤚🏾a🤚🏾");
+    /// assert_eq!(s.truncate_to_boundary(10), s);
+    ///```
     fn truncate_to_boundary(&self, chars: usize) -> &Self {
         if chars == 0 {
             return &self[..0];
@@ -17,8 +38,25 @@ impl TruncateToBoundary for str {
         };
         result
     }
-
+    /// Truncates a given string based on the provided byte-offset.
+    /// If the offset splits a grapheme the truncation will scale back to the previous character.
+    /// If the truncation ends with white space - this will be trimmed.
+    /// Should the offset exceed the strings size - the original string will return (including whitespace).
+    /// # Examples:
+    ///
+    /// ```
+    /// use trunc::*;
+    ///
+    /// let s = "🤚🏾a🤚 ";
+    ///  // 🤚🏾 = 8 bytes
+    /// assert_eq!(s.truncate_to_byte_offset(0), "");
+    /// assert_eq!(s.truncate_to_byte_offset(7), "");
+    /// assert_eq!(s.truncate_to_byte_offset(8), "🤚🏾");
+    /// assert_eq!(s.truncate_to_byte_offset(9), "🤚🏾a");
+    /// assert_eq!(s.truncate_to_byte_offset(18), s);
+    /// ```
     fn truncate_to_byte_offset(&self, boundary: usize) -> &Self {
+
         if boundary > self.len() {
             return &self
         }
@@ -47,10 +85,8 @@ mod tests {
         assert_eq!(s.truncate_to_boundary(2), "🤚🏾");
         assert_eq!(s.truncate_to_boundary(3), "🤚🏾a");
         assert_eq!(s.truncate_to_boundary(4), "🤚🏾a");
-
         assert_eq!(s.truncate_to_boundary(6), "🤚🏾a🤚🏾");
         assert_eq!(s.truncate_to_boundary(7), "🤚🏾a🤚🏾");
-
         assert_eq!(s.truncate_to_boundary(8), "🤚🏾a🤚🏾 🤚🏾");
         assert_eq!(s.truncate_to_boundary(9), "🤚🏾a🤚🏾 🤚🏾");
         assert_eq!(s.truncate_to_boundary(10), "🤚🏾a🤚🏾 🤚🏾");
@@ -101,12 +137,9 @@ mod tests {
     #[test]
     fn truncate_to_bytes(){
         let s = "🤚🏾a🤚 ";
-        assert_eq!(s.truncate_to_byte_offset(0), "");
+;
         assert_eq!(s.truncate_to_byte_offset(1), "");
         assert_eq!(s.truncate_to_byte_offset(2), "");
-        assert_eq!(s.truncate_to_byte_offset(7), "");
-        assert_eq!(s.truncate_to_byte_offset(8), "🤚🏾");
-        assert_eq!(s.truncate_to_byte_offset(9), "🤚🏾a");
         assert_eq!(s.truncate_to_byte_offset(10), "🤚🏾a");
         assert_eq!(s.truncate_to_byte_offset(13), "🤚🏾a🤚");
         assert_eq!(s.truncate_to_byte_offset(14), "🤚🏾a🤚");
