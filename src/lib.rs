@@ -3,6 +3,44 @@ use unicode_segmentation::UnicodeSegmentation;
 pub trait TruncateToBoundary {
     fn truncate_to_boundary(&self, chars: usize) -> &Self;
     fn truncate_to_byte_offset(&self, count: usize) -> &Self;
+    fn slice_indices_at_offset(&self, boundary: usize) -> (&Self, usize);
+}
+
+pub trait SplitToBoundary {
+    fn split_to_offset(&self, offset: usize) -> Vec<&str>;
+    fn split_to_boundary(&self, offset: usize) -> Vec<&str>;
+    fn split_all_to_boundary(&self, offset: usize) -> Vec<&str>;
+}
+
+
+impl SplitToBoundary for dyn Iterator<Item=&str> {
+    fn split_to_offset(&self, offset: usize) -> Vec<&str> {
+        unimplemented!()
+    }
+
+    fn split_to_boundary(&self, offset: usize) -> Vec<&str> {
+        unimplemented!()
+    }
+
+    fn split_all_to_boundary(&self, offset: usize) -> Vec<&str> {
+        unimplemented!()
+    }
+}
+
+impl SplitToBoundary for str {
+
+    fn split_to_offset(&self, offset: usize) -> Vec<&str> {
+    (head, offset) = self.slice_indices_at_offset();
+    vec!(head, &self[offset..])
+    }
+
+    fn split_to_boundary(&self, offset: usize) -> Vec<&str> {
+        unimplemented!()
+    }
+
+    fn split_all_to_boundary(&self, offset: usize) -> Vec<&str> {
+        unimplemented!()
+    }
 }
 
 impl TruncateToBoundary for str {
@@ -57,20 +95,36 @@ impl TruncateToBoundary for str {
     /// assert_eq!(s.truncate_to_byte_offset(18), s);
     /// ```
     fn truncate_to_byte_offset(&self, boundary: usize) -> &Self {
-
         if boundary > self.len() {
             return &self
         }
         let mut grapheme_iter = self
-        .grapheme_indices(true)
-        .rev()
-        .skip_while(move |(n, _)| *n > boundary);
+                .grapheme_indices(true)
+                .rev()
+                .skip_while(move |(n, _)| *n > boundary);
         let mut bytecount = boundary;
         if let Some((grapheme_boundary, _)) = grapheme_iter.next() {
             bytecount = grapheme_boundary;
         }
 
         &self[..bytecount].trim_end()
+    }
+
+    /// The same as 'truncate_to_byte_offset' but returns a tuple with the desired slice along with the byte-offset.
+    fn slice_indices_at_offset(&self, boundary: usize) -> (&Self, usize) {
+        if boundary > self.len() {
+            return (&self, self.len())
+        }
+        let mut grapheme_iter = self
+                .grapheme_indices(true)
+                .rev()
+                .skip_while(move |(n, _)| *n > boundary);
+        let mut bytecount = boundary;
+        if let Some((grapheme_boundary, _)) = grapheme_iter.next() {
+            bytecount = grapheme_boundary;
+        }
+
+        (&self[..bytecount].trim_end(), bytecount)
     }
 }
 
@@ -145,5 +199,30 @@ mod tests {
         assert_eq!(s.truncate_to_byte_offset(14), "🤚🏾a🤚");
         assert_eq!(s.truncate_to_byte_offset(18), s);
         assert_eq!(s.truncate_to_byte_offset(100), s);
+    }
+
+    #[test]
+    fn test_split_offset(){
+        let s = "🤚🏾a🤚 ";
+        assert_eq!(s.split_to_offset(8), vec!("🤚🏾", "a🤚 "));
+    }
+
+    #[test]
+    fn test_split_bytes(){
+        let s = "🤚🏾a🤚 ";
+
+    }
+
+
+    #[test]
+    fn test_split_all(){
+        let s = "🤚🏾a🤚 ";
+
+    }
+
+    #[test]
+    fn test_vector_tailsplit_chaining(){
+        let s = "🤚🏾a🤚 ";
+
     }
 }
