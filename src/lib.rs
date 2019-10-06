@@ -149,8 +149,10 @@ impl SplitToBoundary for str {
         while offset < self.len() {
             let (head, byteoffset) = self[offset..].slice_indices_at_boundary(boundary);
             if byteoffset == 0  {
-                offset = offset+1;
-                continue
+                 let (_, b) = self[offset..].slice_indices_at_boundary(boundary+1); {
+                    offset = offset+b;
+                }
+            continue
             }
             else if !(head.trim().as_bytes() == b"") {
                 result.push(head);
@@ -269,6 +271,7 @@ mod tests {
         assert_eq!(s.split_all_to_boundary(2), vec!("🤚🏾", "a🤚",));
         assert_eq!(s.split_all_to_boundary(3), vec!("🤚🏾a", "🤚 "));
         assert_eq!(s.split_all_to_boundary(4), vec!("🤚🏾a🤚"));
+        assert_eq!(s.split_all_to_boundary(14), vec!("🤚🏾a🤚 "));
     }
 
     #[test]
