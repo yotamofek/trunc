@@ -3,44 +3,14 @@ use unicode_segmentation::UnicodeSegmentation;
 pub trait TruncateToBoundary {
     fn truncate_to_boundary(&self, chars: usize) -> &Self;
     fn truncate_to_byte_offset(&self, count: usize) -> &Self;
-    fn slice_indices_at_offset(&self, boundary: usize) -> (&Self, usize);
+    fn slice_indices_at_offset(&self, offset: usize) -> (&Self, usize);
+    fn slice_indices_at_boundary(&self, boundary: usize) -> (&Self, usize);
 }
 
 pub trait SplitToBoundary {
     fn split_to_offset(&self, offset: usize) -> Vec<&str>;
-    fn split_to_boundary(&self, offset: usize) -> Vec<&str>;
-    fn split_all_to_boundary(&self, offset: usize) -> Vec<&str>;
-}
-
-
-impl SplitToBoundary for dyn Iterator<Item=&str> {
-    fn split_to_offset(&self, offset: usize) -> Vec<&str> {
-        unimplemented!()
-    }
-
-    fn split_to_boundary(&self, offset: usize) -> Vec<&str> {
-        unimplemented!()
-    }
-
-    fn split_all_to_boundary(&self, offset: usize) -> Vec<&str> {
-        unimplemented!()
-    }
-}
-
-impl SplitToBoundary for str {
-
-    fn split_to_offset(&self, offset: usize) -> Vec<&str> {
-    (head, offset) = self.slice_indices_at_offset();
-    vec!(head, &self[offset..])
-    }
-
-    fn split_to_boundary(&self, offset: usize) -> Vec<&str> {
-        unimplemented!()
-    }
-
-    fn split_all_to_boundary(&self, offset: usize) -> Vec<&str> {
-        unimplemented!()
-    }
+    fn split_to_boundary(&self, boundary: usize) -> Vec<&str>;
+    fn split_all_to_boundary(&self, boundary: usize) -> Vec<&str>;
 }
 
 impl TruncateToBoundary for str {
@@ -126,6 +96,77 @@ impl TruncateToBoundary for str {
 
         (&self[..bytecount].trim_end(), bytecount)
     }
+
+    fn slice_indices_at_boundary(&self, boundary: usize) -> (&Self, usize) {
+        if boundary == 0 {
+            return (&self[..0], 0);
+        }
+
+        let (result, offset) = match self.char_indices().nth(boundary) {
+            None => (self, self.len()),
+            Some((b, char)) => self.slice_indices_at_offset(b)
+        };
+        (result, offset)
+    }
+}
+
+impl SplitToBoundary for dyn Iterator<Item=&str> {
+    fn split_to_offset(&self, offset: usize) -> Vec<&str> {
+        unimplemented!()
+    }
+
+    fn split_to_boundary(&self, offset: usize) -> Vec<&str> {
+        unimplemented!()
+    }
+
+    fn split_all_to_boundary(&self, offset: usize) -> Vec<&str> {
+        unimplemented!()
+    }
+}
+
+impl SplitToBoundary for str {
+
+    fn split_to_offset(&self, offset: usize) -> Vec<&str> {
+        if offset > self.len() {
+            return vec!(&self)
+        }
+        let (head, offset) = self.slice_indices_at_offset(offset);
+        vec!(head.trim(), &self[offset..])
+
+    }
+
+    fn split_to_boundary(&self, boundary: usize) -> Vec<&str> {
+        let (head, offset) = self.slice_indices_at_boundary(boundary);
+        if offset == self.len() {
+             return vec!(&self)
+        }
+        vec!(head.trim(), &self[offset..])
+    }
+
+    fn split_all_to_boundary(&self, boundary: usize) -> Vec<&str> {
+        let mut offset = 0usize;
+        let mut result = Vec::new();
+        while offset < self.len() {
+            let (head, byteoffset) = self[offset..].slice_indices_at_boundary(boundary);
+            if byteoffset == 0  {
+                offset = offset+1;
+                continue
+            }
+            else if !(head.trim().as_bytes() == b"") {
+                result.push(head);
+            }
+            offset = offset+byteoffset;
+        }
+        result
+
+    }
+}
+
+pub fn sanitize_string_vec(list: Vec<&str>) -> Vec<&str> {
+        list.iter().
+        filter(|&&x| x.trim().as_bytes() != b"")
+        .map(|x| *x)
+        .collect()
 }
 
 #[cfg(test)]
@@ -202,22 +243,32 @@ mod tests {
     }
 
     #[test]
-    fn test_split_offset(){
+    fn test_split_bytes(){
         let s = "🤚🏾a🤚 ";
         assert_eq!(s.split_to_offset(8), vec!("🤚🏾", "a🤚 "));
+        assert_eq!(s.split_to_offset(9), vec!("🤚🏾a", "🤚 "));
     }
 
     #[test]
-    fn test_split_bytes(){
+    fn test_split_boundary(){
         let s = "🤚🏾a🤚 ";
-
+        assert_eq!(s.split_to_boundary(1), vec!("", "🤚🏾a🤚 "));
+        assert_eq!(s.split_to_boundary(2), vec!("🤚🏾", "a🤚 "));
+        assert_eq!(s.split_to_boundary(3), vec!("🤚🏾a", "🤚 "));
+        assert_eq!(s.split_to_boundary(4), vec!("🤚🏾a🤚", " "));
+        assert_eq!(s.split_to_boundary(5), vec!(s));
+        assert_eq!(s.split_to_boundary(6), vec!(s));
+        assert_eq!(s.split_to_boundary(15), vec!(s));
     }
 
 
     #[test]
     fn test_split_all(){
         let s = "🤚🏾a🤚 ";
-
+        assert_eq!(s.split_all_to_boundary(1), vec!("a", "🤚"));
+        assert_eq!(s.split_all_to_boundary(2), vec!("🤚🏾", "a🤚",));
+        assert_eq!(s.split_all_to_boundary(3), vec!("🤚🏾a", "🤚 "));
+        assert_eq!(s.split_all_to_boundary(4), vec!("🤚🏾a🤚"));
     }
 
     #[test]
