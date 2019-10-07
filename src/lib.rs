@@ -13,6 +13,10 @@ pub trait SplitToBoundary {
     fn split_all_to_boundary(&self, boundary: usize) -> Vec<&str>;
 }
 
+pub trait SplitInplaceToBoundary {
+    fn split_to_offset_inplace(&mut self, offset: usize) -> &mut Self;
+    fn split_to_boundary_inplace(&mut self, boundary: usize) -> &mut Self;
+}
 impl TruncateToBoundary for str {
     /// Truncates a given string to a set numerical boundary.
     /// If the boundary splits a grapheme (e.g., when a character is a resultant mix of more than 1 utf-8 character, like some emojis)
@@ -110,19 +114,6 @@ impl TruncateToBoundary for str {
     }
 }
 
-impl SplitToBoundary for dyn Iterator<Item=&str> {
-    fn split_to_offset(&self, offset: usize) -> Vec<&str> {
-        unimplemented!()
-    }
-
-    fn split_to_boundary(&self, offset: usize) -> Vec<&str> {
-        unimplemented!()
-    }
-
-    fn split_all_to_boundary(&self, offset: usize) -> Vec<&str> {
-        unimplemented!()
-    }
-}
 
 impl SplitToBoundary for str {
 
@@ -160,15 +151,64 @@ impl SplitToBoundary for str {
             offset = offset+byteoffset;
         }
         result
-
     }
 }
 
-pub fn sanitize_string_vec(list: Vec<&str>) -> Vec<&str> {
-        list.iter().
-        filter(|&&x| x.trim().as_bytes() != b"")
-        .map(|x| *x)
-        .collect()
+
+impl SplitInplaceToBoundary for Vec<&str> {
+
+    fn split_to_offset_inplace(&mut self, offset: usize) -> &mut Self {
+        if let Some(string) = self.pop() {
+            let mut new;
+            match string  {
+                "" | " " => new = vec!("", ""),
+                _ => new = string.split_to_boundary(offset)
+            }
+            self.append(&mut new);
+        }
+        self
+    }
+
+    fn split_to_boundary_inplace(&mut self, offset: usize) -> &mut Self {
+        if let Some(string) = self.pop() {
+            let mut new = string.split_to_boundary(offset);
+            self.append(&mut new);
+        }
+        self
+    }
+}
+
+impl SplitToBoundary for Vec<&str> {
+
+    fn split_to_offset(&self, offset: usize) -> Vec<&str> {
+        let mut result = self.clone();
+        if let Some(string) = result.pop(){
+            let mut new = string.split_to_offset(offset);
+            result.append(&mut new);
+        }
+        result
+    }
+
+    fn split_to_boundary(&self, boundary: usize) -> Vec<&str> {
+        let mut result = self.clone();
+        if let Some(string) = result.pop(){
+            let mut new = string.split_to_boundary(boundary);
+            result.append(&mut new);
+        }
+        result
+    }
+
+    fn split_all_to_boundary(&self, boundary: usize) -> Vec<&str> {
+        unimplemented!()
+    }
+}
+
+// perhaps for future use?
+fn sanitize_string_vec(list: Vec<&str>) -> Vec<&str> {
+    list.iter().
+    filter(|&&x| x.trim().as_bytes() != b"")
+    .map(|x| *x)
+    .collect()
 }
 
 #[cfg(test)]
@@ -266,17 +306,36 @@ mod tests {
 
     #[test]
     fn test_split_all(){
-        let s = "🤚🏾a🤚 ";
+        let mut s = "🤚🏾a🤚 ";
         assert_eq!(s.split_all_to_boundary(1), vec!("a", "🤚"));
         assert_eq!(s.split_all_to_boundary(2), vec!("🤚🏾", "a🤚",));
         assert_eq!(s.split_all_to_boundary(3), vec!("🤚🏾a", "🤚 "));
         assert_eq!(s.split_all_to_boundary(4), vec!("🤚🏾a🤚"));
         assert_eq!(s.split_all_to_boundary(14), vec!("🤚🏾a🤚 "));
+
+        let mut s1 = "🤚🏾a🤚🏾 ";
+        assert_eq!(s1.split_all_to_boundary(1), vec!("a"));
+        assert_eq!(s1.split_all_to_boundary(2), vec!("🤚🏾", "a", "🤚🏾"));
     }
 
     #[test]
-    fn test_vector_tailsplit_chaining(){
-        let s = "🤚🏾a🤚 ";
+    fn test_inplace_vector_chaining(){
+        let mut s = vec!("🤚🏾a🤚 ", "🤚🤚🤚 ");
+        s
+                .split_to_boundary_inplace(1)
+                .split_to_boundary_inplace(1)
+                .split_to_boundary_inplace(1);
+        assert_eq!(s, vec!("🤚🏾a🤚 ", "🤚", "🤚", "🤚", " "));
 
+        let mut s1 = vec!("🤚🏾a🤚 ", "🤚🏾 🤚 ");
+        s1.split_to_boundary_inplace(1);
+        assert_eq!(s1, vec!("🤚🏾a🤚 ", "", "🤚🏾 🤚 "));
+        s1.split_to_boundary_inplace(3);
+        assert_eq!(s1, vec!("🤚🏾a🤚 ", "", "🤚🏾", "🤚 "));
+        let mut s2 = vec!("🤚🏾a🤚 ", "🤚🏾🤚🏾 ");
+        s2.split_to_boundary_inplace(2);
+        assert_eq!(s2, vec!("🤚🏾a🤚 ","🤚🏾", "🤚🏾 "));
+        s2.split_to_boundary_inplace(2);
+        assert_eq!(s2, vec!("🤚🏾a🤚 ","🤚🏾", "🤚🏾"," "));
     }
 }
