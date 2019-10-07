@@ -199,6 +199,20 @@ impl SplitToBoundary for str {
 
 impl SplitInplaceToBoundary for Vec<&str> {
 
+    /// an adaptor-like function (i.e., chainable) that performs 'split_to_offset' on the vector in place.
+    ///
+    /// # Examples:
+    /// ```
+    ///
+    /// use truncrate::*;
+    /// use truncrate::SplitInplaceToBoundary;
+    ///
+    /// let mut s = vec!("a", "🤚🏾a🤚 ");
+    ///
+    /// s.split_to_offset_inplace(9).split_to_offset_inplace(9);
+    /// assert_eq!(s, vec!("a", "🤚🏾a", "🤚 "));
+    ///
+    /// ```
     fn split_to_offset_inplace(&mut self, offset: usize) -> &mut Self {
         if let Some(string) = self.pop() {
             let mut new;
@@ -211,6 +225,22 @@ impl SplitInplaceToBoundary for Vec<&str> {
         self
     }
 
+    /// an adaptor-like function (i.e., chainable) that performs 'split_to_boundary' on the vector in place.
+    ///
+    /// ```
+    /// use truncrate::*;
+    ///
+    /// let mut s = vec!("🤚🏾a🤚 ", "🤚🏾🤚🏾 ");
+    /// s.split_to_boundary_inplace(2);
+    /// assert_eq!(s, vec!("🤚🏾a🤚 ","🤚🏾", "🤚🏾 "));
+    /// s.split_to_boundary_inplace(2);
+    /// assert_eq!(s, vec!("🤚🏾a🤚 ","🤚🏾", "🤚🏾"," "));
+    ///
+    /// let mut s2 = vec!("🤚🏾a🤚 ", "🤚🏾🤚🏾 ");
+    /// s2.split_to_boundary_inplace(2).split_to_boundary_inplace(2);
+    /// assert_eq!(s2, vec!("🤚🏾a🤚 ","🤚🏾", "🤚🏾"," "));
+    ///
+    /// ```
     fn split_to_boundary_inplace(&mut self, offset: usize) -> &mut Self {
         if let Some(string) = self.pop() {
             let mut new;
@@ -225,7 +255,7 @@ impl SplitInplaceToBoundary for Vec<&str> {
 }
 
 impl SplitToBoundary for Vec<&str> {
-
+    /// performs a 'split_to_boundary' on the last element of a Vec<&str> thus adding another item to the list with the truncated string based on a character boundary.
     fn split_to_boundary(&self, boundary: usize) -> Vec<&str> {
         let mut result = self.clone();
         if let Some(string) = result.pop(){
@@ -235,7 +265,8 @@ impl SplitToBoundary for Vec<&str> {
         result
     }
 
-        fn split_to_offset(&self, offset: usize) -> Vec<&str> {
+    /// performs a 'split_to_offset' on the last element of a Vec<&str> thus adding another item to the list with the truncated string based byte limitation.
+    fn split_to_offset(&self, offset: usize) -> Vec<&str> {
         let mut result = self.clone();
         if let Some(string) = result.pop(){
             let mut new = string.split_to_offset(offset);
@@ -244,6 +275,7 @@ impl SplitToBoundary for Vec<&str> {
         result
     }
 
+    /// performs a split_all_to_boundary on the last element of a Vec<&str> thus performing a unicode aware split on of its strings, along with trimming and removal of empty strings.
     fn split_all_to_boundary(&self, boundary: usize) -> Vec<&str> {
         let mut result = self.clone();
         if let Some(string) = result.pop(){
@@ -254,7 +286,7 @@ impl SplitToBoundary for Vec<&str> {
     }
 }
 
-/// removes empty strings from vector
+/// removes empty string ("" or " ") from a Vec<&str>.
 pub fn sanitize_string_vec(list: Vec<&str>) -> Vec<&str> {
     list.iter().
     filter(|&&x| x.trim().as_bytes() != b"")
@@ -381,11 +413,6 @@ mod tests {
         assert_eq!(s1, vec!("🤚🏾a🤚 ", "", "🤚🏾 🤚 "));
         s1.split_to_boundary_inplace(3);
         assert_eq!(s1, vec!("🤚🏾a🤚 ", "", "🤚🏾", "🤚 "));
-        let mut s2 = vec!("🤚🏾a🤚 ", "🤚🏾🤚🏾 ");
-        s2.split_to_boundary_inplace(2);
-        assert_eq!(s2, vec!("🤚🏾a🤚 ","🤚🏾", "🤚🏾 "));
-        s2.split_to_boundary_inplace(2);
-        assert_eq!(s2, vec!("🤚🏾a🤚 ","🤚🏾", "🤚🏾"," "));
     }
 
   #[test]

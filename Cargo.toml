@@ -1,10 +1,10 @@
 [package]
 name = "truncrate"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Yotam Ofek <yotam.ofek@gmail.com>", "Galoz666 <yavinarba@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
-description = "truncate strings economically without splitting your charactersm, symbols, emojis etc."
+description = "truncate strings economically without splitting your characters, symbols, emojis etc."
 repository = "https://github.com/yotamofek/trunc"
 readme = "README.md"
 
