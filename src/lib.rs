@@ -27,7 +27,6 @@ impl TruncateToBoundary for str {
     ///
     /// # Examples:
     ///
-    ///
     /// ```
     /// use truncrate::*;
     ///
@@ -55,6 +54,7 @@ impl TruncateToBoundary for str {
     /// If the offset splits a grapheme the truncation will scale back to the previous character.
     /// If the truncation ends with white space - this will be trimmed.
     /// Should the offset exceed the strings size - the original string will return (including whitespace).
+    ///
     /// # Examples:
     ///
     /// ```
@@ -102,18 +102,18 @@ impl TruncateToBoundary for str {
 
         let (result, offset) = match self.char_indices().nth(boundary) {
             None => (self, self.len()),
-            Some((b, char)) => self.slice_indices_at_offset(b)
+            Some((b, _char)) => self.slice_indices_at_offset(b)
         };
         (result, offset)
     }
 
     /// The same as 'truncate_to_byte_offset' but returns a tuple with the desired slice along with the byte-offset.
     /// assert_eq!(s.truncate_to_byte_offset(8), "🤚🏾");
+    ///
     /// # Examples:
     ///
     /// ```
     /// use truncrate::*;
-    /// use truncrate::TruncateToBoundary;
     ///
     /// let s = "🤚🏾🤚🏾 ";
     /// assert_eq!(s.slice_indices_at_offset(9), ("🤚🏾", 8));
@@ -148,6 +148,8 @@ impl SplitToBoundary for str {
 
     /// performs a 'truncate_to_byte_offset' and produces a vector with the rest of the string on the right side.
     /// This can be regarded as a left-side-split with unicode awareness and trimming.
+    /// # Examples:
+    ///
     /// ```
     /// use truncrate::*;
     ///
@@ -163,6 +165,17 @@ impl SplitToBoundary for str {
         vec!(head, &self[offset..])
     }
 
+    /// performs a 'split_to_boundary' until all of the string has been split properly.
+    /// Also removes needless spaces and empty strings.
+    /// # Examples:
+    ///
+    /// ```
+    /// use truncrate::*;
+    ///
+    /// let mut s = "🤚🏾a🤚 ";
+    /// assert_eq!(s.split_all_to_boundary(1), vec!("a", "🤚"));
+    /// assert_eq!(s.split_all_to_boundary(2), vec!("🤚🏾", "a🤚",));
+    /// ```
     fn split_all_to_boundary(&self, boundary: usize) -> Vec<&str> {
         let mut offset = 0usize;
         let mut result = Vec::new();
@@ -191,7 +204,7 @@ impl SplitInplaceToBoundary for Vec<&str> {
             let mut new;
             match string  {
                 "" | " " => new = vec!("", ""),
-                _ => new = string.split_to_boundary(offset)
+                _ => new = string.split_to_offset(offset)
             }
             self.append(&mut new);
         }
@@ -200,7 +213,11 @@ impl SplitInplaceToBoundary for Vec<&str> {
 
     fn split_to_boundary_inplace(&mut self, offset: usize) -> &mut Self {
         if let Some(string) = self.pop() {
-            let mut new = string.split_to_boundary(offset);
+            let mut new;
+            match string  {
+                "" | " " => new = vec!("", ""),
+                _ => new = string.split_to_boundary(offset)
+            }
             self.append(&mut new);
         }
         self
@@ -228,7 +245,7 @@ impl SplitToBoundary for Vec<&str> {
     }
 
     fn split_all_to_boundary(&self, boundary: usize) -> Vec<&str> {
-            let mut result = self.clone();
+        let mut result = self.clone();
         if let Some(string) = result.pop(){
             let mut new = string.split_all_to_boundary(boundary);
             result.append(&mut new);
@@ -237,8 +254,8 @@ impl SplitToBoundary for Vec<&str> {
     }
 }
 
-// perhaps for future use?
-fn sanitize_string_vec(list: Vec<&str>) -> Vec<&str> {
+/// removes empty strings from vector
+pub fn sanitize_string_vec(list: Vec<&str>) -> Vec<&str> {
     list.iter().
     filter(|&&x| x.trim().as_bytes() != b"")
     .map(|x| *x)
@@ -340,20 +357,18 @@ mod tests {
 
     #[test]
     fn test_split_all(){
-        let mut s = "🤚🏾a🤚 ";
-        assert_eq!(s.split_all_to_boundary(1), vec!("a", "🤚"));
-        assert_eq!(s.split_all_to_boundary(2), vec!("🤚🏾", "a🤚",));
+        let s = "🤚🏾a🤚 ";
         assert_eq!(s.split_all_to_boundary(3), vec!("🤚🏾a", "🤚 "));
         assert_eq!(s.split_all_to_boundary(4), vec!("🤚🏾a🤚"));
         assert_eq!(s.split_all_to_boundary(14), vec!("🤚🏾a🤚 "));
 
-        let mut s1 = "🤚🏾a🤚🏾 ";
+        let s1 = "🤚🏾a🤚🏾 ";
         assert_eq!(s1.split_all_to_boundary(1), vec!("a"));
         assert_eq!(s1.split_all_to_boundary(2), vec!("🤚🏾", "a", "🤚🏾"));
     }
 
     #[test]
-    fn test_inplace_vector_chaining(){
+    fn test_inplace_vector_chaining_boundry(){
         let mut s = vec!("🤚🏾a🤚 ", "🤚🤚🤚 ");
         s
                 .split_to_boundary_inplace(1)
@@ -371,5 +386,23 @@ mod tests {
         assert_eq!(s2, vec!("🤚🏾a🤚 ","🤚🏾", "🤚🏾 "));
         s2.split_to_boundary_inplace(2);
         assert_eq!(s2, vec!("🤚🏾a🤚 ","🤚🏾", "🤚🏾"," "));
+    }
+
+  #[test]
+  fn test_test_vector_chaining_offset() {
+      let mut s = vec!("🤚🏾a🤚 ", "🤚🏾🤚🏾🤚🏾  ");
+      s.split_to_offset_inplace(9)
+              .split_to_offset_inplace(8)
+              .split_to_offset_inplace(10);
+      assert_eq!(s, vec!("🤚🏾a🤚 ", "🤚🏾", "🤚🏾", "🤚🏾", " "));
+    }
+
+  #[test]
+  fn test_vector_split_all() {
+    let s = vec!("🤚🏾a🤚 ", "🤚🤚🤚 ");
+    assert_eq!(s.split_all_to_boundary(1), vec!("🤚🏾a🤚 ", "🤚", "🤚", "🤚"));
+    let s1 = vec!("🤚🏾a🤚 ", "🤚🏾a🤚🏾 ");
+    assert_eq!(s1.split_all_to_boundary(1), vec!("🤚🏾a🤚 ", "a"));
+    assert_eq!(s1.split_all_to_boundary(2), vec!("🤚🏾a🤚 ", "🤚🏾", "a", "🤚🏾"));
     }
 }
