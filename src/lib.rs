@@ -202,8 +202,8 @@ impl SplitInplaceToBoundary for Vec<&str> {
     /// an adaptor-like function (i.e., chainable) that performs 'split_to_offset' on the vector in place.
     ///
     /// # Examples:
-    /// ```
     ///
+    /// ```
     /// use truncrate::*;
     /// use truncrate::SplitInplaceToBoundary;
     ///
