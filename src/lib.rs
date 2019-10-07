@@ -3,13 +3,14 @@ use unicode_segmentation::UnicodeSegmentation;
 pub trait TruncateToBoundary {
     fn truncate_to_boundary(&self, chars: usize) -> &Self;
     fn truncate_to_byte_offset(&self, count: usize) -> &Self;
-    fn slice_indices_at_offset(&self, offset: usize) -> (&Self, usize);
     fn slice_indices_at_boundary(&self, boundary: usize) -> (&Self, usize);
+    fn slice_indices_at_offset(&self, offset: usize) -> (&Self, usize);
+
 }
 
 pub trait SplitToBoundary {
-    fn split_to_offset(&self, offset: usize) -> Vec<&str>;
     fn split_to_boundary(&self, boundary: usize) -> Vec<&str>;
+    fn split_to_offset(&self, offset: usize) -> Vec<&str>;
     fn split_all_to_boundary(&self, boundary: usize) -> Vec<&str>;
 }
 
@@ -84,7 +85,39 @@ impl TruncateToBoundary for str {
         &self[..bytecount].trim_end()
     }
 
+    /// The same as 'truncate_to_boundary' but returns a tuple with the desired slice along with the byte-offset.
+    ///
+    /// # Examples:
+    ///
+    /// ```
+    /// use truncrate::*;
+    ///
+    /// let s = "🤚🏾a🤚🏾 ";
+    /// assert_eq!(s.slice_indices_at_boundary(2), ("🤚🏾", 8));
+    /// ```
+    fn slice_indices_at_boundary(&self, boundary: usize) -> (&Self, usize) {
+        if boundary == 0 {
+            return (&self[..0], 0);
+        }
+
+        let (result, offset) = match self.char_indices().nth(boundary) {
+            None => (self, self.len()),
+            Some((b, char)) => self.slice_indices_at_offset(b)
+        };
+        (result, offset)
+    }
+
     /// The same as 'truncate_to_byte_offset' but returns a tuple with the desired slice along with the byte-offset.
+    /// assert_eq!(s.truncate_to_byte_offset(8), "🤚🏾");
+    /// # Examples:
+    ///
+    /// ```
+    /// use truncrate::*;
+    /// use truncrate::TruncateToBoundary;
+    ///
+    /// let s = "🤚🏾🤚🏾 ";
+    /// assert_eq!(s.slice_indices_at_offset(9), ("🤚🏾", 8));
+    /// ```
     fn slice_indices_at_offset(&self, boundary: usize) -> (&Self, usize) {
         if boundary > self.len() {
             return (&self, self.len())
@@ -100,38 +133,34 @@ impl TruncateToBoundary for str {
 
         (&self[..bytecount].trim_end(), bytecount)
     }
-
-    fn slice_indices_at_boundary(&self, boundary: usize) -> (&Self, usize) {
-        if boundary == 0 {
-            return (&self[..0], 0);
-        }
-
-        let (result, offset) = match self.char_indices().nth(boundary) {
-            None => (self, self.len()),
-            Some((b, char)) => self.slice_indices_at_offset(b)
-        };
-        (result, offset)
-    }
 }
 
-
 impl SplitToBoundary for str {
-
-    fn split_to_offset(&self, offset: usize) -> Vec<&str> {
-        if offset > self.len() {
-            return vec!(&self)
-        }
-        let (head, offset) = self.slice_indices_at_offset(offset);
-        vec!(head.trim(), &self[offset..])
-
-    }
-
+    /// performs a 'truncate_to_boundary' and produces a vector with the rest of the string on the right side.
+    /// This can be regarded as a left-side-split with unicode awareness trimming.
     fn split_to_boundary(&self, boundary: usize) -> Vec<&str> {
         let (head, offset) = self.slice_indices_at_boundary(boundary);
         if offset == self.len() {
              return vec!(&self)
         }
-        vec!(head.trim(), &self[offset..])
+        vec!(head, &self[offset..])
+    }
+
+    /// performs a 'truncate_to_byte_offset' and produces a vector with the rest of the string on the right side.
+    /// This can be regarded as a left-side-split with unicode awareness and trimming.
+    /// ```
+    /// use truncrate::*;
+    ///
+    /// let s = "🤚🏾a🤚 ";
+    /// assert_eq!(s.split_to_offset(7), vec!("", "🤚🏾a🤚 "));
+    /// assert_eq!(s.split_to_offset(8), vec!("🤚🏾", "a🤚 "));
+    /// ```
+    fn split_to_offset(&self, offset: usize) -> Vec<&str> {
+        if offset > self.len() {
+            return vec!(&self)
+        }
+        let (head, offset) = self.slice_indices_at_offset(offset);
+        vec!(head, &self[offset..])
     }
 
     fn split_all_to_boundary(&self, boundary: usize) -> Vec<&str> {
@@ -180,15 +209,6 @@ impl SplitInplaceToBoundary for Vec<&str> {
 
 impl SplitToBoundary for Vec<&str> {
 
-    fn split_to_offset(&self, offset: usize) -> Vec<&str> {
-        let mut result = self.clone();
-        if let Some(string) = result.pop(){
-            let mut new = string.split_to_offset(offset);
-            result.append(&mut new);
-        }
-        result
-    }
-
     fn split_to_boundary(&self, boundary: usize) -> Vec<&str> {
         let mut result = self.clone();
         if let Some(string) = result.pop(){
@@ -198,8 +218,22 @@ impl SplitToBoundary for Vec<&str> {
         result
     }
 
+        fn split_to_offset(&self, offset: usize) -> Vec<&str> {
+        let mut result = self.clone();
+        if let Some(string) = result.pop(){
+            let mut new = string.split_to_offset(offset);
+            result.append(&mut new);
+        }
+        result
+    }
+
     fn split_all_to_boundary(&self, boundary: usize) -> Vec<&str> {
-        unimplemented!()
+            let mut result = self.clone();
+        if let Some(string) = result.pop(){
+            let mut new = string.split_all_to_boundary(boundary);
+            result.append(&mut new);
+        }
+        result
     }
 }
 
@@ -287,7 +321,7 @@ mod tests {
     #[test]
     fn test_split_bytes(){
         let s = "🤚🏾a🤚 ";
-        assert_eq!(s.split_to_offset(8), vec!("🤚🏾", "a🤚 "));
+        assert_eq!(s.split_to_offset(7), vec!("", "🤚🏾a🤚 "));
         assert_eq!(s.split_to_offset(9), vec!("🤚🏾a", "🤚 "));
     }
 
