@@ -36,6 +36,7 @@ assert_eq!(s.truncate_to_boundary(10), s);
 You can also choose to truncate by byte-offset (i.e., byte-size boundary):
 
 ```
+use truncrate::*;
 
 let s = "🤚🏾a🤚 ";
 // where "🤚🏾" = 8 bytes
@@ -43,30 +44,7 @@ assert_eq!(s.truncate_to_byte_offset(0), "");
 assert_eq!(s.truncate_to_byte_offset(8), "🤚🏾");
 ```
 
-Aside from truncation of a single string you can also split with unicode awareness:
-
+For further explanations and examples check out the auto generated documentation with:
 ```
-let mut s = "🤚🏾a🤚 ";
-assert_eq!(s.split_all_to_boundary(1), vec!("a", "🤚"));
-assert_eq!(s.split_all_to_boundary(2), vec!("🤚🏾", "a🤚",));
+cargo doc --open
 ```
-
-If you wish to chain splitting patterns you can do it with the 'inplace' functions:
-
-```
-let mut s = vec!("🤚🏾a🤚 ", "🤚🏾🤚🏾🤚🏾  ");
-// split different byte offsets
-s.split_to_offset_inplace(9)
-      .split_to_offset_inplace(8)
-      .split_to_offset_inplace(10);
-assert_eq!(s, vec!("🤚🏾a🤚 ", "🤚🏾", "🤚🏾", "🤚🏾", " "));
-```
-
-You can also split all of your strings to boundary with the split_all_to_boundary method:
-```
-let s = "🤚🏾a🤚 ";
-assert_eq!(s.split_all_to_boundary(3), vec!("🤚🏾a", "🤚 "));
-```
-
-
-For the full functionality and further examples check out the documentation. 
