@@ -62,7 +62,7 @@ s.split_to_offset_inplace(9)
 assert_eq!(s, vec!("🤚🏾a🤚 ", "🤚🏾", "🤚🏾", "🤚🏾", " "));
 ```
 
-You can also split all of your strings to boundary with the split_all_to_boundary method:
+You can also split all of your string to a boundary with the split_all_to_boundary method:
 ```
 let s = "🤚🏾a🤚 ";
 assert_eq!(s.split_all_to_boundary(3), vec!("🤚🏾a", "🤚 "));
